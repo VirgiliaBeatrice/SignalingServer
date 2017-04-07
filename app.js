@@ -11,21 +11,62 @@ app.get('/', function (req, res) {
 
 var root = io.of('/');
 
+function User(username, userid) {
+    this.username = username;
+    this.userid = userid;
+}
+
+var onTypes = {
+    sys_msg: 'system message',
+    pri_msg: 'private message',
+    pub_msg: 'public message',
+    userL_req: 'user list request',
+    user_reg: 'user register',
+    userL_push: 'user list push'
+};
+
+var messagePack = {};
+messagePack.caller = new User('', 0);
+messagePack.callee = new User('', 0);
+messagePack.msg = '';
+
 io.on('connection', function (socket) {
     const welcome = 'Someone has connected to the server.';
 
     console.info(welcome);
     socket.emit('system_info', welcome);
 
-   socket.on('name_register', function (user) {
-       var system_message = 'User #' + user.name + '# is coming.';
-       socket.username = user.name;
-
-       console.info(system_message);
-       socket.emit('system_info', welcome);
-   });
+    registerNewUser(socket);
    
-   socket.on('send', function (msg_package) {
-        socket.to()
+   socket.on('send', function (msg_pack) {
+       console.info('S: ' + msg_pack.caller.username + ' R: ' + msg_pack.callee.username + ' - ' + msg_pack.msg);
+        socket.to(msg_pack.callee.userid).emit('private_msg', msg_pack.msg);
    })
 });
+
+function registerNewUser(socket) {
+    socket.user = new User();
+
+    socket.on(onTypes.user_reg, function (user_info) {
+        var system_message = 'User #' + socket.user.username + '# is coming.';
+
+        socket.user.username = user_info;
+        socket.user.userid = socket.id;
+
+        console.info(system_message);
+        socket.emit(onTypes.sys_msg, system_message);
+    });
+}
+
+function pushLatestUserList(socket) {
+    root
+}
+
+function getConnectedUser() {
+    var root = io.of('/');
+
+    root.clients(function (err, clients) {
+        if (err) throw error;
+        console.info()
+    })
+}
