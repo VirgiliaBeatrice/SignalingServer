@@ -55,18 +55,10 @@ function registerNewUser(socket) {
 
         console.info(system_message);
         socket.emit(onTypes.sys_msg, system_message);
+        socket.emit(onTypes.userL_push, getConnectedUser('/'));
     });
 }
 
-function pushLatestUserList(socket) {
-    root
-}
-
-function getConnectedUser() {
-    var root = io.of('/');
-
-    root.clients(function (err, clients) {
-        if (err) throw error;
-        console.info()
-    })
+function getConnectedUser(path) {
+    return io.of(path).connected;
 }
