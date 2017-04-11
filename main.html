@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         $(document).ready(
             function () {
-                $("#")
+                var socket = io();
+                var onTypes = {
+                    sys_msg: 'system message',
+                    pri_msg: 'private message',
+                    pub_msg: 'public message',
+                    userL_req: 'user list request',
+                    user_reg: 'user register',
+                    userL_push: 'user list push'
+                };
+                $('#name_btn').click(function () {
+                    socket.emit(onTypes.user_reg, $('#name').val());
+                    return false;
+                })
             }
         )
     </script>
@@ -16,13 +29,18 @@
     <div id="user_info">
         <label for="name">User Name:</label>
         <input type="text" id="name" />
-        <button class="btn enter">Enter</button>
+        <button id="name_btn" class="btn enter">Enter</button>
     </div>
     <div id="message">
         <ul id="message_detailed"></ul>
     </div>
     <div id="user_list">
         <ul id="user_list_detailed"></ul>
+    </div>
+    <div id="input_form">
+        <label for="message_form">Message:</label>
+        <input type="text" id="message_form" />
+        <button id="message_btn" class="btn enter">Enter</button>
     </div>
 </body>
 </html>
