@@ -13,14 +13,39 @@
                     sys_msg: 'system message',
                     pri_msg: 'private message',
                     pub_msg: 'public message',
-                    userL_req: 'user list request',
                     user_reg: 'user register',
                     userL_push: 'user list push'
                 };
+
                 $('#name_btn').click(function () {
                     socket.emit(onTypes.user_reg, $('#name').val());
                     return false;
+                });
+
+                $('#message_btn').click(function () {
+                    socket.emit(onTypes.pri_msg, $('#message_form').val());
+                    return false;
+                });
+
+//                $()
+
+                socket.on(onTypes.userL_push, function (user_list_json) {
+                    var user_list = JSON.parse(user_list_json);
+
+                    $('#user_list_detailed').empty();
+
+                    user_list.forEach(function (p1, p2, p3) {
+                        if (p1.hasOwnProperty('username')) {
+                            $('#user_list_detailed').append($('<li>').text(p1.username).addClass('msg_detailed'));
+                        }
+                        $('.msg_detailed').css({"color": "red"});
+                    });
+                });
+
+                socket.on(onTypes.sys_msg, function (msg) {
+                    $('#message_detailed').append($('<li>').text(msg));
                 })
+
             }
         )
     </script>

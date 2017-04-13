@@ -22,7 +22,6 @@ var onTypes = {
     sys_msg: 'system message',
     pri_msg: 'private message',
     pub_msg: 'public message',
-    userL_req: 'user list request',
     user_reg: 'user register',
     userL_push: 'user list push'
 };
@@ -35,21 +34,7 @@ messagePack.msg = '';
 io.on('connection', function (curr_socket) {
     welcome(curr_socket);
 
-    curr_socket.user = new User();
-
-    curr_socket.on(onTypes.user_reg, function (user_info) {
-        var system_message = '';
-
-        curr_socket.user.username = user_info;
-        curr_socket.user.userid = curr_socket.id;
-        system_message = 'User #' + user_info + '# is coming.';
-
-        console.info(system_message);
-        curr_socket.emit(onTypes.sys_msg, system_message);
-        test();
-        // getConnectedUser('/');
-        // curr_socket.emit(onTypes.userL_push, getConnectedUser('/'));
-    });
+    registerNewUser(curr_socket);
 
     sendPrivateMessage(curr_socket);
 });
@@ -61,22 +46,21 @@ function welcome(curr_socket) {
     curr_socket.emit('system_info', welcome);
 }
 
-// function registerNewUser(curr_socket) {
-//     curr_socket.user = new User();
-//
-//     console.info('Warning!');
-//     curr_socket.on(onTypes.user_reg, function (user_info) {
-//         var system_message = '';
-//
-//         curr_socket.user.username = user_info;
-//         curr_socket.user.userid = curr_socket.id;
-//         system_message = 'User #' + user_info + '# is coming.';
-//
-//         console.info(system_message);
-//         curr_socket.emit(onTypes.sys_msg, system_message);
-//         curr_socket.emit(onTypes.userL_push, getConnectedUser('/'));
-//     });
-// }
+function registerNewUser(curr_socket) {
+    curr_socket.user = new User();
+
+    curr_socket.on(onTypes.user_reg, function (user_info) {
+        var system_message = 'User #' + user_info + '# is coming.';
+
+        curr_socket.user.username = user_info;
+        curr_socket.user.userid = curr_socket.id;
+
+        console.info(system_message);
+        root.emit(onTypes.sys_msg, system_message);
+
+        root.emit(onTypes.userL_push, JSON.stringify(pushUserList()));
+    });
+}
 
 function sendPrivateMessage(curr_socket) {
     curr_socket.on(onTypes.pri_msg, function (msg) {
@@ -87,38 +71,16 @@ function sendPrivateMessage(curr_socket) {
     })
 }
 
-function getConnectedUser() {
-    // root.clients(function(error, clients){
-    //     if (error) throw error;
-    //     console.log(clients);
-    //     return clients;
-    // });
-    console.info(root.connected);
-    return root.connected;
-}
+function pushUserList() {
+    var user_list = [];
+    var connected_clients = Object.values(root.connected);
 
-io.getConnectedUser = function () {
-    root.clients(function(error, clients){
-        if (error) throw error;
-        console.log(clients);
-        var clients_pair = [];
-        clients.forEach(function (p1, p2, p3) {
-
-        })
+    connected_clients.forEach(function (p1, p2, p3) {
+        user_list.push(p1.user);
     });
-};
+    // console.log(user_list);
 
-function test() {
-    root.clients(function (error, clients) {
-        if (error) throw error;
-        var user_list = [];
-        console.info(clients);
-        clients.forEach(function (p1, p2, p3) {
-            console.info(root.connected[p1]);
-            user_list.push(root.connected[p1].user);
-        });
-        console.log(user_list);
-    })
+    return user_list;
 }
 
 // logging
