@@ -27,8 +27,6 @@
                     return false;
                 });
 
-//                $()
-
                 socket.on(onTypes.userL_push, function (user_list_json) {
                     var user_list = JSON.parse(user_list_json);
 
@@ -36,16 +34,23 @@
 
                     user_list.forEach(function (p1, p2, p3) {
                         if (p1.hasOwnProperty('username')) {
-                            $('#user_list_detailed').append($('<li>').text(p1.username).addClass('msg_detailed'));
+                            $('#user_list_detailed').append($('li').text(p1.username).addClass('msg_detailed'));
                         }
-                        $('.msg_detailed').css({"color": "red"});
+                        $('.msg_detailed').click(function () {
+                            $('label[for="message_form"]').append($('p').text($('this').val()));
+                            $('.msg_detailed').css({'background': 'grey'});
+                        });
                     });
                 });
 
                 socket.on(onTypes.sys_msg, function (msg) {
                     $('#message_detailed').append($('<li>').text(msg));
-                })
+                });
 
+                function selectLiElement(selected_user) {
+                    $('.msg_detailed').css({'background': 'grey'});
+                    $('label[for="message_form"]').append($('<p>').text(selected_user));
+                }
             }
         )
     </script>
