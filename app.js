@@ -22,6 +22,7 @@ var onTypes = {
     sys_msg: 'system message',
     pri_msg: 'private message',
     pub_msg: 'public message',
+    user_msg: 'user message',
     user_reg: 'user register',
     userL_push: 'user list push'
 };
@@ -37,6 +38,8 @@ io.on('connection', function (curr_socket) {
     registerNewUser(curr_socket);
 
     sendPrivateMessage(curr_socket);
+
+    sendUserMessage(curr_socket);
 });
 
 function welcome(curr_socket) {
@@ -68,6 +71,25 @@ function sendPrivateMessage(curr_socket) {
         console.info('Caller: ' + msg.caller);
         console.info('Message: ' + msg.msg);
         curr_socket.to(msg.callee.userid).emit(onTypes.pri_msg, msg.msg);
+    })
+}
+
+function sendUserMessage(curr_socket) {
+    curr_socket.on(onTypes.user_msg, function (msg) {
+        var msg_pack = JSON.parse(msg);
+
+        if (msg_pack.callee === undefined) {
+            console.info('Caller: ' + msg_pack.caller.username);
+            console.info('Message: ' + msg_pack.msg);
+
+            root.emit(onTypes.user_msg, msg);
+        } else {
+            console.info('Caller: ' + msg_pack.caller.username);
+            console.info('Callee: ' + msg_pack.callee.username);
+            console.info('Message: ' + msg_pack.msg);
+
+            curr_socket.to(msg_pack.callee.userid).emit(onTypes.user_msg, msg);
+        }
     })
 }
 

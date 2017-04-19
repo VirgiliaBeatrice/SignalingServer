@@ -1,0 +1,19 @@
+{
+  "name": "Hello World",
+  "version": "0.0.1",
+  "author": "Haoyan.Li",
+  "description": "",
+  "keywords": [
+    "node.js",
+    "javascript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://path/to/url"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^1.7.3"
+  }
+}
