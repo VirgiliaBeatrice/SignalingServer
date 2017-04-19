@@ -17,6 +17,16 @@
                     userL_push: 'user list push'
                 };
 
+                function User(username, userid) {
+                    this.username = username;
+                    this.userid = userid;
+                }
+
+                var messagePack = {};
+                messagePack.caller = new User('', 0);
+                messagePack.callee = new User('', 0);
+                messagePack.msg = '';
+
                 $('#name_btn').click(function () {
                     socket.emit(onTypes.user_reg, $('#name').val());
                     return false;
@@ -27,6 +37,14 @@
                     return false;
                 });
 
+                socket.on(onTypes.sys_msg, function (msg) {
+                    $('#message_detailed').append($('<li>').text(msg).addClass('msg_line'));
+                });
+
+                socket.on(onTypes.pri_msg, function (msg) {
+
+                });
+
                 socket.on(onTypes.userL_push, function (user_list_json) {
                     var user_list = JSON.parse(user_list_json);
 
@@ -34,23 +52,35 @@
 
                     user_list.forEach(function (p1, p2, p3) {
                         if (p1.hasOwnProperty('username')) {
-                            $('#user_list_detailed').append($('li').text(p1.username).addClass('msg_detailed'));
+                            $('#user_list_detailed').append(
+                                $('<li>').text(p1.username).addClass('user_line').attr(
+                                    {"isSelected": 'false', "id" : p1.userid})
+//                                (p2 + 1).toString()
+                            );
                         }
-                        $('.msg_detailed').click(function () {
-                            $('label[for="message_form"]').append($('p').text($('this').val()));
-                            $('.msg_detailed').css({'background': 'grey'});
-                        });
+                    });
+                    $('li.user_line').click(function () {
+                        var selected_user = $(this).text();
+
+                        if ($(this).attr("isSelected") === 'false') {
+                            $('label[for="message_form"]').after(
+                                $('<p>').text(selected_user).addClass("selected user").attr(
+                                    {"username": selected_user}
+                                )
+                            );
+                            $(this).css({'color': 'red'}).attr({"isSelected": 'true'});
+                        }
+                        else {
+                            var selector = 'p.selected.user[username="' + selected_user + '"]';
+                            console.info(selector);
+                            $(selector).remove();
+                            $(this).css({'color': 'black'}).attr({"isSelected": 'false'});
+                        }
+                        return false;
                     });
                 });
 
-                socket.on(onTypes.sys_msg, function (msg) {
-                    $('#message_detailed').append($('<li>').text(msg));
-                });
 
-                function selectLiElement(selected_user) {
-                    $('.msg_detailed').css({'background': 'grey'});
-                    $('label[for="message_form"]').append($('<p>').text(selected_user));
-                }
             }
         )
     </script>
