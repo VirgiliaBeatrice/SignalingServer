@@ -20,11 +20,10 @@ function User(username, userid) {
 
 var onTypes = {
     sys_msg: 'system message',
-    pri_msg: 'private message',
-    pub_msg: 'public message',
     user_msg: 'user message',
     user_reg: 'user register',
-    userL_push: 'user list push'
+    userL_push: 'user list push',
+    offer: 'offer'
 };
 
 var messagePack = {};
@@ -36,8 +35,6 @@ io.on('connection', function (curr_socket) {
     welcome(curr_socket);
 
     registerNewUser(curr_socket);
-
-    sendPrivateMessage(curr_socket);
 
     sendUserMessage(curr_socket);
 });
@@ -72,6 +69,10 @@ function sendPrivateMessage(curr_socket) {
         console.info('Message: ' + msg.msg);
         curr_socket.to(msg.callee.userid).emit(onTypes.pri_msg, msg.msg);
     })
+}
+
+function sendOffer() {
+
 }
 
 function sendUserMessage(curr_socket) {
