@@ -16,13 +16,17 @@ var $localBtn = $('.btn#local_video_ctrl_btn button'),
     $remoteBtn = $('.btn#remote_video_ctrl_btn button'),
     $localInviteBtn = $('.btn#local_video_invite_btn button'),
     $remoteInviteBtn = $('.btn#remote_video_invite_btn button');
-var localStream;
+var localStream,
+    videoTracks,
+    peerConnection1,
+    peerConnection2;
 
 $localBtn.click(function () {
   var localMediaDevice = navigator.mediaDevices.getUserMedia(constraints);
 
-  localMediaDevice.then(function (stream) {
-    var videoTracks = stream.getVideoTracks();
+  localMediaDevice
+    .then(function (stream) {
+    videoTracks = stream.getVideoTracks();
 
     console.log('Got stream with constraints: ', constraints);
     console.log('Using Video device: ' + videoTracks[0].label);
@@ -34,7 +38,7 @@ $localBtn.click(function () {
     window.stream = stream;
     $localVideo.srcObject = stream;
   }).catch(function (error) {
-
+    console.error(error);
   })
 });
 
@@ -46,12 +50,49 @@ var iceServers = {
   }]
 };
 
-$localInviteBtn.click(function () {
-  var activePeer =  new RTCPeerConnection(iceServers);
 
-  activePeer.addTrack()
+$localInviteBtn.click(function () {
+  peerConnection1 =  new RTCPeerConnection(iceServers);
+
+  videoTracks.forEach(function (p1, p2, p3) {
+    peerConnection1.addTrack(p1, $localVideo);
+  });
+
+  peerConnection1.onnegotiationneeded = function () {
+    this.createOffer({
+      iceRestart: true,
+      voiceActivityDetection: true
+    }).then(function (offer) {
+      return this.setLocalDescription(offer)
+    }).then(function () {
+      SendOffer(this.localDescription);
+    }).catch(function (error) {
+      console.error(error);
+    })
+  }
 });
 
+function HandleVideoOffer(offerPack) {
+  peerConnection2 = new RTCPeerConnection(iceServers);
+
+  var sdp = new RTCSessionDescription(offerPack.sdp);
+
+  peerConnection2.setRemoteDescription(sdp)
+    .then(function () {
+    return navigator.mediaDevices.getUserMedia(constraints);
+  }).then(
+    function (stream) {
+      videoTracks = stream.getVideoTracks();
+
+      window.stream = stream;
+      $localVideo.srcObject = stream;
+
+      videoTracks.forEach(function (p1, p2, p3) {
+        peerConnection2.addTrack(p1, $localVideo);
+      });
+    }
+  )
+}
 
 
 
