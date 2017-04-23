@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="chat.css">
+    <!--<script type="text/javascript"-->
+            <!--src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>-->
     <script type="text/javascript"
-            src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
+            src="jquery-3.2.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-      $(document).ready(
-        function () {
+    <!--<script>-->
+      <!--$(document).ready(-->
+        <!--function () {-->
 
 
-        }
-      )
-    </script>
+        <!--}-->
+      <!--)-->
+    <!--</script>-->
 </head>
 <body>
 <div id="user_info">
@@ -34,7 +37,7 @@
 </div>
 <div id="video_main">
     <div class="video-frame" id="video_main_local">
-        <video class="video" id="video_local"></video>
+        <video class="video" id="video_local" autoplay></video>
         <button class="btn" id="local_video_ctrl_btn">Open</button>
         <button class="btn" id="local_video_invite_btn">Invite</button>
     </div>
@@ -44,5 +47,10 @@
         <button class="btn" id="remote_video_invite_btn">Invite</button>
     </div>
 </div>
+
+<script src="adapter.js"></script>
+<script src="app_front.js"></script>
+<script src="webrtc_video_chat.js"></script>
+
 </body>
 </html>

@@ -7,8 +7,8 @@ var onTypes = {
   user_msg: 'user message',
   user_reg: 'user register',
   userL_push: 'user list push',
-  offer: 'offer'
-
+  offer: 'offer',
+  answer: 'answer',
 };
 
 function User(username, userid) {
@@ -20,7 +20,6 @@ var msg_pack = {},
   offerPack = {};
 
 $('#name_btn').click(function () {
-
   var user_name = $('#name').val();
 
   socket.emit(onTypes.user_reg, user_name);
@@ -105,11 +104,12 @@ socket.on(onTypes.userL_push, function (user_list_json) {
       msg_pack.callee = undefined;
       offerPack.callee = msg_pack.callee;
     }
+
     return false;
   });
 });
 
-function SendOffer(sdp) {
+function SendOfferAndAnswer(sdp) {
   offerPack.sdp = sdp;
   socket.emit(onTypes.offer, JSON.stringify(offerPack))
 }
@@ -118,6 +118,6 @@ socket.on(onTypes.offer, function (offerPackReceived) {
   HandleVideoOffer(JSON.parse(offerPackReceived));
 });
 
-function SendAnswer(videoAnswer) {
-
-}
+socket.on(onTypes.answer, function (answerPackReceived) {
+  HandleVideoAnswer(JSON.parse(answerPackReceived));
+});

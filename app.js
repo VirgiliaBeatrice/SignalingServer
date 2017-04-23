@@ -1,15 +1,34 @@
 /**
  * Created by LiHaoyan on 3/31/2017.
  */
-var app = require('express')();
+var express = require('express');
+var app = express();
+
+
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+// var io = require('socket.io')(https);
+var fs = require('fs');
 
 http.listen(8080);
 
+
+var privateKey = fs.readFileSync('./cert/private.pem', 'utf-8');
+var certificate = fs.readFileSync('./cert/file.crt', 'utf-8');
+var credentials = {
+    key: privateKey,
+    cert: certificate,
+};
+var https = require('https').Server(credentials, app);
+var io = require('socket.io')(https);
+
+https.listen(8081);
+
+
+app.use('/', express.static(__dirname + '/'));
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/main.html');
 });
+
 
 var root = io.of('/');
 
@@ -71,10 +90,6 @@ function sendPrivateMessage(curr_socket) {
     })
 }
 
-function sendOffer() {
-
-}
-
 function sendUserMessage(curr_socket) {
     curr_socket.on(onTypes.user_msg, function (msg) {
         var msg_pack = JSON.parse(msg);
@@ -107,7 +122,7 @@ function pushUserList() {
 }
 
 // logging
-var fs = require('fs');
+// var fs = require('fs');
 var util = require('util');
 var logFile = fs.createWriteStream('log.txt', { flags: 'a' });
 // Or 'w' to truncate the file every time the process starts.

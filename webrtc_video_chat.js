@@ -1,0 +1,117 @@
+/**
+ * Created by Haoyan.Li on 2017/3/29.
+ */
+'use strict';
+
+var constraints = {
+  video: true,
+  audio: false,
+};
+
+
+var $localVideo = $('video.video-frame#video_local'),
+    $remoteVideo = $('video.video-frame#video_remote');
+
+var $localCtrlBtn = $('button.btn#local_video_ctrl_btn'),
+    $remoteBtn = $('button.btn#remote_video_ctrl_btn'),
+    $localInviteBtn = $('button.btn#local_video_invite_btn'),
+    $remoteInviteBtn = $('button.btn#remote_video_invite_btn');
+var localStream,
+    videoTracks,
+    peerConnection1,
+    peerConnection2;
+
+$localCtrlBtn.click(function () {
+  // var localMediaDevice = navigator.mediaDevices.getUserMedia(constraints);
+
+  console.info('Loading video streaming.');
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function (stream) {
+    videoTracks = stream.getVideoTracks();
+
+    console.log('Got stream with constraints: ', constraints);
+    console.log('Using Video device: ' + videoTracks[0].label);
+
+    stream.onremovetrack = function () {
+      console.log('Stream ended.');
+    };
+
+    window.stream = stream;
+    $localVideo.srcObject = stream;
+    // $localVideo.src = window.URL.createObjectURL(stream);
+  }).catch(function (error) {
+    console.error(error);
+  })
+});
+
+var iceServers = {
+  iceServers: [{
+    'url': [
+      'stun:stun.l.google.com:19302'
+    ]
+  }]
+};
+
+
+$localInviteBtn.click(function () {
+  peerConnection1 =  new RTCPeerConnection(iceServers);
+
+  // Chrome still uses addStream() function
+  videoTracks.forEach(function (p1, p2, p3) {
+    peerConnection1.addTrack(p1, $localVideo);
+  });
+  // peerConnection1.addStream(stream);
+
+  peerConnection1.onnegotiationneeded = function () {
+    this.createOffer({
+      iceRestart: true,
+      voiceActivityDetection: true
+    }).then(function (offer) {
+      return this.setLocalDescription(offer)
+    }).then(function () {
+      SendOfferAndAnswer(this.localDescription);
+    }).catch(function (error) {
+      console.error(error);
+    })
+  }
+});
+
+function HandleVideoOffer(offerPack) {
+  peerConnection2 = new RTCPeerConnection(iceServers);
+
+  var sdp = new RTCSessionDescription(offerPack.sdp);
+
+  peerConnection2.setRemoteDescription(sdp)
+    .then(function () {
+    return navigator.mediaDevices.getUserMedia(constraints);
+  }).then(function (stream) {
+    videoTracks = stream.getVideoTracks();
+
+    window.stream = stream;
+    $localVideo.srcObject = stream;
+
+    // videoTracks.forEach(function (p1, p2, p3) {
+    //   this.addTrack(p1, $localVideo);
+    // });
+    this.addStream(stream);
+  }).then(function () {
+    return this.createAnswer();
+  }).then(function (answer) {
+    return this.setLocalDescription(answer);
+  }).then(function () {
+    SendOfferAndAnswer(this.localDescription);
+  }).catch(function (error) {
+    console.error(error);
+  })
+}
+
+function HandleVideoAnswer(answerPack) {
+  // peerConnection1
+  var sdp = new RTCSessionDescription(answerPack.sdp);
+
+  peerConnection1.setRemoteDescription(sdp)
+    .catch(function (error) {
+      console.error(error);
+    });
+}
