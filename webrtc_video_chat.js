@@ -9,13 +9,16 @@ var constraints = {
 };
 
 
-var $localVideo = $('video.video-frame#video_local'),
-    $remoteVideo = $('video.video-frame#video_remote');
+var $localVideo = $('video.video#video_local')[0],
+    $remoteVideo = $('video.video#video_remote')[0];
 
 var $localCtrlBtn = $('button.btn#local_video_ctrl_btn'),
     $remoteBtn = $('button.btn#remote_video_ctrl_btn'),
     $localInviteBtn = $('button.btn#local_video_invite_btn'),
     $remoteInviteBtn = $('button.btn#remote_video_invite_btn');
+
+var localVideo = document.getElementById('video_local');
+
 var localStream,
     videoTracks,
     peerConnection1,
@@ -38,8 +41,10 @@ $localCtrlBtn.click(function () {
     };
 
     window.stream = stream;
+    console.info(stream);
     $localVideo.srcObject = stream;
-    // $localVideo.src = window.URL.createObjectURL(stream);
+    console.info($localVideo);
+      // $localVideo.src = window.URL.createObjectURL(stream);
   }).catch(function (error) {
     console.error(error);
   })
@@ -47,7 +52,7 @@ $localCtrlBtn.click(function () {
 
 var iceServers = {
   iceServers: [{
-    'url': [
+    'urls': [
       'stun:stun.l.google.com:19302'
     ]
   }]
@@ -57,20 +62,22 @@ var iceServers = {
 $localInviteBtn.click(function () {
   peerConnection1 =  new RTCPeerConnection(iceServers);
 
+  peerConnection1.onicecandidate = HandleICECandidateEvent;
+
   // Chrome still uses addStream() function
-  videoTracks.forEach(function (p1, p2, p3) {
-    peerConnection1.addTrack(p1, $localVideo);
-  });
-  // peerConnection1.addStream(stream);
+  // videoTracks.forEach(function (p1, p2, p3) {
+  //   peerConnection1.addTrack(p1, $localVideo);
+  // });
+  peerConnection1.addStream(stream);
 
   peerConnection1.onnegotiationneeded = function () {
-    this.createOffer({
+    peerConnection1.createOffer({
       iceRestart: true,
       voiceActivityDetection: true
     }).then(function (offer) {
-      return this.setLocalDescription(offer)
+      return peerConnection1.setLocalDescription(offer)
     }).then(function () {
-      SendOfferAndAnswer(this.localDescription);
+      SendOfferAndAnswer(peerConnection1.localDescription);
     }).catch(function (error) {
       console.error(error);
     })
@@ -78,12 +85,14 @@ $localInviteBtn.click(function () {
 });
 
 function HandleVideoOffer(offerPack) {
-  peerConnection2 = new RTCPeerConnection(iceServers);
+  peerConnection1 = new RTCPeerConnection(iceServers);
 
+  peerConnection1.onaddstream = HandleAddStreamEvent;
+  // var sdp = offerPack.sdp;
   var sdp = new RTCSessionDescription(offerPack.sdp);
+  var prevCaller = offerPack.caller;
 
-  peerConnection2.setRemoteDescription(sdp)
-    .then(function () {
+  peerConnection1.setRemoteDescription(sdp).then(function () {
     return navigator.mediaDevices.getUserMedia(constraints);
   }).then(function (stream) {
     videoTracks = stream.getVideoTracks();
@@ -94,13 +103,13 @@ function HandleVideoOffer(offerPack) {
     // videoTracks.forEach(function (p1, p2, p3) {
     //   this.addTrack(p1, $localVideo);
     // });
-    this.addStream(stream);
+    peerConnection1.addStream(stream);
   }).then(function () {
-    return this.createAnswer();
+    return peerConnection1.createAnswer();
   }).then(function (answer) {
-    return this.setLocalDescription(answer);
+    return peerConnection1.setLocalDescription(answer);
   }).then(function () {
-    SendOfferAndAnswer(this.localDescription);
+    SendOfferAndAnswer(peerConnection1.localDescription, prevCaller);
   }).catch(function (error) {
     console.error(error);
   })
@@ -110,8 +119,33 @@ function HandleVideoAnswer(answerPack) {
   // peerConnection1
   var sdp = new RTCSessionDescription(answerPack.sdp);
 
+  peerConnection1.onaddstream = HandleAddStreamEvent;
+
   peerConnection1.setRemoteDescription(sdp)
     .catch(function (error) {
       console.error(error);
     });
+
+
+}
+
+function HandleICECandidateEvent(event) {
+  if (event.candidate) {
+    SendICECandidate(event.candidate);
+  }
+}
+
+function HandleNewICECandidateMsg(candidatePack) {
+  var candidate = new RTCIceCandidate(candidatePack.candidate);
+
+  peerConnection1.addIceCandidate(candidate)
+    .catch(function (error) {
+      console.error(error);
+    });
+  console.log('A new ICE candidate has been added.')
+  console.log('Candidate information: ' + JSON.stringify(candidatePack.candidate));
+}
+
+function HandleAddStreamEvent(event) {
+  $remoteVideo.srcObject = event.stream;
 }

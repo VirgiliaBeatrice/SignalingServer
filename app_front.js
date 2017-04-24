@@ -9,6 +9,7 @@ var onTypes = {
   userL_push: 'user list push',
   offer: 'offer',
   answer: 'answer',
+  candidate: 'candidate',
 };
 
 function User(username, userid) {
@@ -17,7 +18,8 @@ function User(username, userid) {
 }
 
 var msg_pack = {},
-  offerPack = {};
+    offerPack = {},
+    candidatePack = {};
 
 $('#name_btn').click(function () {
   var user_name = $('#name').val();
@@ -25,6 +27,7 @@ $('#name_btn').click(function () {
   socket.emit(onTypes.user_reg, user_name);
   msg_pack.caller = new User(user_name, socket.id);
   offerPack.caller = msg_pack.caller;
+  candidatePack.caller = msg_pack.caller;
 
   $(this).before($('<p>')
     .text(user_name + '#' + socket.id));
@@ -95,6 +98,7 @@ socket.on(onTypes.userL_push, function (user_list_json) {
       $(this).css({'color': 'red'}).attr({"isSelected": 'true'});
       msg_pack.callee = selected_user;
       offerPack.callee = msg_pack.callee;
+      candidatePack.callee = msg_pack.callee;
     }
     else {
       var selector = 'p.selected.user[username="' + selected_user.username + '"]';
@@ -103,15 +107,31 @@ socket.on(onTypes.userL_push, function (user_list_json) {
       $(this).css({'color': 'black'}).attr({"isSelected": 'false'});
       msg_pack.callee = undefined;
       offerPack.callee = msg_pack.callee;
+      candidatePack.callee = msg_pack.callee;
     }
 
     return false;
   });
 });
 
-function SendOfferAndAnswer(sdp) {
+function SendOfferAndAnswer(sdp, prevCaller) {
   offerPack.sdp = sdp;
-  socket.emit(onTypes.offer, JSON.stringify(offerPack))
+  if (prevCaller !== undefined) {
+    offerPack.callee = prevCaller;
+  }
+  console.info(offerPack);
+  if (offerPack.sdp.type === 'offer') {
+    socket.emit(onTypes.offer, JSON.stringify(offerPack))
+  }else if (offerPack.sdp.type === 'answer') {
+    socket.emit(onTypes.answer, JSON.stringify(offerPack))
+  }
+}
+
+function SendICECandidate(candidate) {
+  candidatePack.candidate = candidate;
+
+  console.info(candidatePack);
+  socket.emit(onTypes.candidate, JSON.stringify(candidatePack));
 }
 
 socket.on(onTypes.offer, function (offerPackReceived) {
@@ -120,4 +140,8 @@ socket.on(onTypes.offer, function (offerPackReceived) {
 
 socket.on(onTypes.answer, function (answerPackReceived) {
   HandleVideoAnswer(JSON.parse(answerPackReceived));
+});
+
+socket.on(onTypes.candidate, function (candidatePackReceived) {
+  HandleNewICECandidateMsg(JSON.parse(candidatePackReceived));
 });
