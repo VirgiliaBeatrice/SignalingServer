@@ -53,6 +53,17 @@ $('#message_btn').click(function () {
   return false;
 });
 
+$('button.btn#fullscreenBtn').click(
+  function () {
+    console.info("Change to Full screen mode.");
+    $('video.video#video_remote').addClass("overlay");
+    $('.overlay').css({"width": "100%"});
+
+
+    return false;
+  }
+);
+
 socket.on(onTypes.sys_msg, function (msg) {
   $('#message_detailed').append($('<li>').text(msg).addClass('msg_line'));
 });

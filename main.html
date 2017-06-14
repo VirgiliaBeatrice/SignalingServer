@@ -35,6 +35,10 @@
     <input type="text" id="message_form"/>
     <button id="message_btn" class="btn enter">Enter</button>
 </div>
+
+<!--<div class="overlay" id="videoBg">-->
+    <!--<a href="#" >About</a>-->
+<!--</div>-->
 <div id="video_main">
     <div class="video-frame" id="video_main_local">
         <video class="video" id="video_local" autoplay muted></video>
@@ -42,12 +46,20 @@
         <button class="btn" id="local_video_invite_btn">Invite</button>
     </div>
     <div class="video-frame" id="video_main_remote">
-        <video class="video" id="video_remote" autoplay></video>
+        <video class="video" id="video_remote" autoplay>
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        </video>
         <!--<button class="btn" id="remote_video_ctrl_btn">Link</button>-->
         <!--<button class="btn" id="remote_video_invite_btn">Invite</button>-->
     </div>
 </div>
+<button class="btn" id="fullscreenBtn">
+    Fullscreen
+</button>
 
+<script>
+
+</script>
 <script src="adapter.js"></script>
 <script src="app_front.js"></script>
 <script src="webrtc_video_chat.js"></script>
