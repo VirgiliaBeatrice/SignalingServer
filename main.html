@@ -53,12 +53,22 @@
         <!--<button class="btn" id="remote_video_invite_btn">Invite</button>-->
     </div>
 </div>
-<button class="btn" id="fullscreenBtn">
-    Fullscreen
-</button>
+<button class="btn" id="fullscreenBtn">Fullscreen</button>
+<canvas id="gaze_overlay">
+
+</canvas>
 
 <script>
-
+  var canvas = document.getElementsByTagName('canvas')[0];
+  var ctx = canvas.getContext('2d');
+  setInterval(function(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var r=Math.random()*255, g=Math.random()*255, b=Math.random()*255;
+    ctx.fillStyle = 'rgb('+r+','+g+','+b+')';
+    var w=Math.random()*canvas.width,     h=Math.random()*canvas.height;
+    var x=Math.random()*(canvas.width-w), y=Math.random()*(canvas.height-h);
+    ctx.fillRect(x,y,w,h);
+  },1000/15);
 </script>
 <script src="adapter.js"></script>
 <script src="app_front.js"></script>
