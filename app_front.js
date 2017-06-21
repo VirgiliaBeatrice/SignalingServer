@@ -74,13 +74,15 @@ $('button.btn#full_screen_btn').click(
       $('.overlay').css({"width": "100%", "position": "fixed"});
 
       $("div#video_elem").css({
-        "width": "100%"
+        "width": "100%",
+        "height": "100%"
       });
 
       $("div#ctrl_btns").css({
         "position": "fixed",
         "bottom": "0"
       });
+
     }
     else {
       console.info("Change to normal layout.");
