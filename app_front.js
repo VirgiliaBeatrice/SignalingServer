@@ -48,6 +48,7 @@ $('#message_btn').click(function () {
   if (msgPack.callee !== undefined) {
     var echo = 'Private Message to ' + msgPack.callee.username + ': ';
 
+    console.info(msgPack.callee);
     socket.emit(onTypes.user_msg, JSON.stringify(msgPack));
 
     AddLiElement('#message_detailed', 'msg_line', echo + msgPack.msg);
@@ -65,9 +66,31 @@ $('#message_btn').click(function () {
 
 $('button.btn#full_screen_btn').click(
   function () {
-    console.info("Change to Full screen mode.");
-    $('video#video_remote').addClass("overlay");
-    $('.overlay').css({"width": "100%", "position": "fixed"});
+    if ($(this).attr("isFullScreen") === "false"){
+      console.info("Change to Full screen mode.");
+
+      $(this).attr("isFullScreen", "true");
+      $('div#video_frame').addClass("overlay");
+      $('.overlay').css({"width": "100%", "position": "fixed"});
+
+      $("div#video_elem").css({
+        "width": "100%"
+      });
+
+      $("div#ctrl_btns").css({
+        "position": "fixed",
+        "bottom": "0"
+      });
+    }
+    else {
+      console.info("Change to normal layout.");
+
+      $(this).attr("isFullScreen", "false");
+      $('.overlay').removeAttr("style").removeAttr("class");
+      $("div#video_elem").removeAttr("style");
+      $("div#ctrl_btns").removeAttr("style");
+    }
+
 
 
     return false;
@@ -113,7 +136,7 @@ socket.on(onTypes.userL_push, function (user_list_json) {
 
   $('a.user_line').click(function () {
 //                        var selected_username = $(this).text();
-    var selected_user = new User($(this).text(), $(this).attr('id'));
+    var selected_user = new User($(this).text(), $(this).parent().attr('id'));
 
     if ($(this).attr("isSelected") === 'false') {
       $('label[for="message_form"]').after(

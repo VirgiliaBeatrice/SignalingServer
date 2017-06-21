@@ -10,7 +10,7 @@
 /*}*/
 
 .overlay {
-    background-color: rgba(0,0,0,0.9);
+    background-color: rgba(0,0,0,0.8);
     /*background-color: rgb(0,0,0, 0.9);*/
     /*width: 0;*/
     height: 100%;
@@ -83,7 +83,7 @@ div#message, div#user_list {
     width: 100%;
     height: 30px;
     font-size: 16px;
-    background: aquamarine;
+    /*background: aquamarine;*/
 }
 
 #container {
@@ -92,14 +92,14 @@ div#message, div#user_list {
     width: 100%;
     height: calc(100% - 30px - 20px);
     overflow: hidden;
-    background-color: darkgray;
+    /*background-color: darkgray;*/
 }
 
 #side_bar {
     position: relative;
     width: 200px;
     height: auto;
-    background: cornflowerblue;
+    /*background: cornflowerblue;*/
 }
 
 #side_bar > div {
@@ -178,4 +178,13 @@ html, body {
 
 video {
     margin: 0;
+}
+
+#video_frame.overlay {
+    width: 100%;
+    position: fixed;
+    display: flex;
+    flex: 0 1 auto;
+    justify-content: center;
+    align-items: center;
 }
