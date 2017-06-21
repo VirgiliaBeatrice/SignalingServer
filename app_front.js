@@ -71,7 +71,8 @@ $('button.btn#full_screen_btn').click(
 
       $(this).attr("isFullScreen", "true");
       $('div#video_frame').addClass("overlay");
-      $('.overlay').css({"width": "100%", "position": "fixed"});
+      // $('video#video_remote').addClass("overlay");
+      // $('.overlay').css({"width": "100%", "position": "fixed"});
 
       $("div#video_elem").css({
         "width": "100%",
@@ -83,14 +84,19 @@ $('button.btn#full_screen_btn').click(
         "bottom": "0"
       });
 
+      $("video#video_local").hide();
+
     }
     else {
       console.info("Change to normal layout.");
 
       $(this).attr("isFullScreen", "false");
-      $('.overlay').removeAttr("style").removeAttr("class");
+      $('.overlay').removeAttr("class");
+    // .removeAttr("style")
       $("div#video_elem").removeAttr("style");
       $("div#ctrl_btns").removeAttr("style");
+
+      $("video#video_local").show();
     }
 
 
