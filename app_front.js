@@ -17,7 +17,7 @@ function User(username, userid) {
   this.userid = userid;
 }
 
-var msg_pack = {},
+var msgPack = {},
     offerPack = {},
     candidatePack = {};
 
@@ -25,9 +25,11 @@ $('#name_btn').click(function () {
   var user_name = $('#name').val();
 
   socket.emit(onTypes.user_reg, user_name);
-  msg_pack.caller = new User(user_name, socket.id);
-  offerPack.caller = msg_pack.caller;
-  candidatePack.caller = msg_pack.caller;
+
+  // Set current user name into the caller portion of each message pack.
+  msgPack.caller = new User(user_name, socket.id);
+  offerPack.caller = msgPack.caller;
+  candidatePack.caller = msgPack.caller;
 
   $(this).before($('<p>')
     .text(user_name + '#' + socket.id));
@@ -38,48 +40,60 @@ $('#name_btn').click(function () {
   return false;
 });
 
+
 $('#message_btn').click(function () {
-  var msg_input = $('#message_form');
-  var echo = 'Private Message to ' + msg_pack.callee.username + ': ';
-  msg_pack.msg = msg_input.val();
+  var msgInput = $('#message_form');
+  msgPack.msg = msgInput.val();
 
-  socket.emit(onTypes.user_msg, JSON.stringify(msg_pack));
+  if (msgPack.callee !== undefined) {
+    var echo = 'Private Message to ' + msgPack.callee.username + ': ';
 
-  msg_input.val('');
-  $('#message_detailed').append($('<li>')
-    .text(echo + msg_pack.msg)
-    .addClass('msg_line'));
+    socket.emit(onTypes.user_msg, JSON.stringify(msgPack));
+
+    AddLiElement('#message_detailed', 'msg_line', echo + msgPack.msg);
+  }
+  else {
+    console.info("No callee has been set up.");
+  }
+
+  // Clean previous input.
+  msgInput.val('');
 
   return false;
 });
 
-$('button.btn#fullscreenBtn').click(
+
+$('button.btn#full_screen_btn').click(
   function () {
     console.info("Change to Full screen mode.");
-    $('video.video#video_remote').addClass("overlay");
-    $('.overlay').css({"width": "100%"});
+    $('video#video_remote').addClass("overlay");
+    $('.overlay').css({"width": "100%", "position": "fixed"});
 
 
     return false;
   }
 );
 
+
 socket.on(onTypes.sys_msg, function (msg) {
-  $('#message_detailed').append($('<li>').text(msg).addClass('msg_line'));
+  AddLiElement('#message_detailed', 'msg_line', msg);
 });
+
 
 socket.on(onTypes.user_msg, function (msg) {
-  var msg_pack = JSON.parse(msg);
+  var msgPack = JSON.parse(msg);
   var echo = '';
 
-  if (msg_pack.callee === undefined) {
+  if (msgPack.callee === undefined) {
     echo = 'Public Message: ';
-  } else {
-    echo = 'Private Message from ' + msg_pack.caller.username + ': ';
   }
-  $('#message_detailed').append($('<li>')
-    .text(echo + msg_pack.msg).addClass('msg_line'));
+  else {
+    echo = 'Private Message from ' + msgPack.caller.username + ': ';
+  }
+
+  AddLiElement('#message_detailed', 'msg_line', echo + msgPack.msg);
 });
+
 
 socket.on(onTypes.userL_push, function (user_list_json) {
   var user_list = JSON.parse(user_list_json);
@@ -88,15 +102,16 @@ socket.on(onTypes.userL_push, function (user_list_json) {
 
   user_list.forEach(function (p1, p2, p3) {
     if (p1.hasOwnProperty('username')) {
-      $('#user_list_detailed').append(
-        $('<li>').text(p1.username).addClass('user_line').attr(
-          {"isSelected": 'false', "id": p1.userid})
-//                                (p2 + 1).toString()
+      AddLiElement(
+        '#user_list_detailed',
+        'user_line',
+        p1.username,
+        {"isSelected": 'false', "id": p1.userid}
       );
     }
   });
 
-  $('li.user_line').click(function () {
+  $('a.user_line').click(function () {
 //                        var selected_username = $(this).text();
     var selected_user = new User($(this).text(), $(this).attr('id'));
 
@@ -107,18 +122,20 @@ socket.on(onTypes.userL_push, function (user_list_json) {
         )
       );
       $(this).css({'color': 'red'}).attr({"isSelected": 'true'});
-      msg_pack.callee = selected_user;
-      offerPack.callee = msg_pack.callee;
-      candidatePack.callee = msg_pack.callee;
+      msgPack.callee = selected_user;
+      offerPack.callee = msgPack.callee;
+      candidatePack.callee = msgPack.callee;
     }
     else {
       var selector = 'p.selected.user[username="' + selected_user.username + '"]';
-//                            console.info(selector);
+
       $(selector).remove();
-      $(this).css({'color': 'black'}).attr({"isSelected": 'false'});
-      msg_pack.callee = undefined;
-      offerPack.callee = msg_pack.callee;
-      candidatePack.callee = msg_pack.callee;
+      $(this).attr({"isSelected": 'false'}).removeAttr('style');
+
+      // Clear the callee setting of each message pack.
+      msgPack.callee = undefined;
+      offerPack.callee = msgPack.callee;
+      candidatePack.callee = msgPack.callee;
     }
 
     return false;
@@ -156,3 +173,19 @@ socket.on(onTypes.answer, function (answerPackReceived) {
 socket.on(onTypes.candidate, function (candidatePackReceived) {
   HandleNewICECandidateMsg(JSON.parse(candidatePackReceived));
 });
+
+
+function AddLiElement(tarUlName, tarClsName, content, attrVal) {
+  $tarUl = $(tarUlName);
+
+  $tarUl.append($('<li>'));
+  $tarUl.children().last().append($('<a>').text(content).addClass(tarClsName));
+
+  if (attrVal !== undefined) {
+    $tarUl.children().last().attr(attrVal);
+  }
+  else {
+    console.info("No attribute.");
+  }
+  return $tarUl;
+}

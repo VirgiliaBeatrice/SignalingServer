@@ -44,6 +44,38 @@
     font-size: 60px;
 }
 
+ul li {
+    list-style-type: none;
+}
+
+ul li:hover, ul li:focus {
+    color: brown;
+}
+
+ul {
+    padding-left: 10px;
+    margin: 10px 0;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+ul li:nth-child(odd) {
+    background-color: #f1f1f1;
+}
+
+ul li:nth-child(even) {
+    background-color: #818181;
+}
+
+
+div#input_form > p, div#user_info > p {
+    display: inline;
+}
+
+div#message, div#user_list {
+    font-size: 16px;
+    font-weight: bold;
+}
 
 
 #user_info {
@@ -68,6 +100,11 @@
     width: 200px;
     height: auto;
     background: cornflowerblue;
+}
+
+#side_bar > div {
+    position: relative;
+    height: 50%;
 }
 
 #video_frame {
